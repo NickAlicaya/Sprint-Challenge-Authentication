@@ -2,9 +2,11 @@ const request = require("supertest");
 
 const server = require("./server.js");
 
-it("should set db environment to testing", function () {
-  expect(process.env.DB_ENV).toBe("testing");
-});
+describe('test environment', function() {
+    it('should use the testing environment', function() {
+        expect(process.env.DB_ENV).toBe('testing');
+    })
+})
 
 describe("server", function() {
   describe("GET /", function() {

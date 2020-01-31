@@ -44,6 +44,7 @@ describe('register functionality', () => {
   });
 });
 
+//test for login using /api/auth/login
 describe("login functionality", () => {
   it("should return status 200", async () => {
     const res = await request(server)

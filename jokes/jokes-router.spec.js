@@ -19,7 +19,7 @@ describe("jokes router", () => {
   });
 })
 
-describe("get /api/jokes", () =>{
+describe("when doing GET /api/jokes", () =>{
     beforeEach(async() => {
         await db('users')
         .truncate
