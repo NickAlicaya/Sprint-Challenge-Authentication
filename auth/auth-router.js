@@ -1,11 +1,79 @@
+
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const router = require('express').Router();
 
+const { jwtSecret } = require('../config/secrets.js')
+
+const Users = require('./auth-model.js');
+const restricted = require('./authenticate-middleware.js');
+
+
+
+// for endpoints beginning with /api/auth
 router.post('/register', (req, res) => {
-  // implement registration
+  let user = req.body;
+  const hash = bcrypt.hashSync(user.password, 3); // 2 ^ n
+  user.password = hash;
+
+  Users.add(user)
+    .then(saved => {
+      res.status(201).json(saved);
+    })
+    .catch(error => {
+      res.status(500).json(error);
+    });
 });
 
+
+
+// endpoint for login in
 router.post('/login', (req, res) => {
-  // implement login
+  let { username, password } = req.body;
+
+
+  if(!username || !password) {
+    res.status(401).json({ message: "username and password are both required to login" });
+    
+  } else {
+  Users.findBy({ username })
+    .first()
+    .then(user => {
+      if (user && bcrypt.compareSync(password, user.password)) {
+
+        const token = signToken(user); // <<<<<<<<<<<
+
+        res.status(200).json({ token }); // <<<<<<<<<<
+      } else {
+        res.status(401).json({ message: 'Invalid Credentials' });
+      }
+    })
+    .catch(error => {
+      res.status(500).json(error);
+    });
+  }
 });
+
+//GET requests to /api/auth returns list of all users
+router.get('/', restricted, (req, res) => {
+  Users.find()
+    .then(users => {
+      res.json(users);
+    })
+    .catch(err => res.send(err));
+});
+
+
+function signToken(user) {
+  const payload = {
+    user
+  };
+
+  const options = {
+    expiresIn: '1d'
+  };
+
+  return jwt.sign(payload, jwtSecret, options);
+}
 
 module.exports = router;
